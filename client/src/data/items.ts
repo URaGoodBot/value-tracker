@@ -26,6 +26,7 @@ export interface ItemData {
 // 1999 onward are real SPY year-end closes (split-adjusted), from Robinhood MCP.
 // Only these years appear on the chart's x-axis — adding more would densify
 // the sparse line and require item-level USD prices we don't have.
+// (Build trigger: force CDN cache invalidation for tracker.goodbotai.tech)
 const BASE_FINANCIALS: Record<number, { gold: number, btc: number | null, spy: number | null }> = {
   1970: { gold: 36, btc: null, spy: 9.22 },
   1975: { gold: 161, btc: null, spy: 9.02 },
