@@ -115,6 +115,13 @@ export default function AdvancedInsights() {
   const btcCostEnd = currentEraData.btcPriceUSD ? currentEraData.itemPriceUSD / currentEraData.btcPriceUSD : null;
   const btcCostChange = (btcCostStart && btcCostEnd) ? calculateChange(btcCostStart, btcCostEnd) : null;
 
+  // SPY Cost — always available via the era-fallback to nearest year in BASE_FINANCIALS.
+  // For pre-1993 parent eras the value is the S&P 500 index ÷ 10 (SPY proxy).
+  const spyCostStart = parentEraData.spyPriceUSD ? parentEraData.itemPriceUSD / parentEraData.spyPriceUSD : null;
+  const spyCostEnd = currentEraData.spyPriceUSD ? currentEraData.itemPriceUSD / currentEraData.spyPriceUSD : null;
+  const spyCostChange = (spyCostStart && spyCostEnd) ? calculateChange(spyCostStart, spyCostEnd) : null;
+  const spyIsProxyPre1993 = parentEraYear < 1993;
+
   // Filter data for the chart to start from the ACTUAL era year shown (so the chart and labels agree)
   const filteredItem = useMemo(() => {
     return {
@@ -354,6 +361,18 @@ export default function AdvancedInsights() {
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       <span className="text-orange-500 font-semibold">Bitcoin:</span> Bitcoin wasn't available in {parentEraYear} (launched in 2009). Try selecting a more recent year to see Bitcoin comparisons.
+                    </p>
+                  )}
+
+                  <Separator className="my-4 bg-blue-500/20" />
+
+                  {spyCostChange !== null && (
+                    <p className="text-sm text-muted-foreground">
+                      <span className="text-blue-400 font-semibold">S&amp;P 500 (SPY):</span> Priced in shares, the cost has <span className={spyCostChange > 0 ? "text-red-400" : "text-green-400"}>
+                        {spyCostChange > 0 ? "increased" : "decreased"} by {Math.abs(spyCostChange).toFixed(0)}%
+                      </span>. {spyIsProxyPre1993
+                        ? `SPY launched in 1993; the ${parentEraYear} figure uses the S&P 500 index as a proxy.`
+                        : `Broad equities have preserved purchasing power over this period.`}
                     </p>
                   )}
 

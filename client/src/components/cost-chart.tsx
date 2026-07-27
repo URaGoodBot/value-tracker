@@ -23,12 +23,14 @@ export function CostChart({ item }: CostChartProps) {
       const costUSD = point.itemPriceUSD;
       const costGold = point.itemPriceUSD / point.goldPriceUSD; // Ounces of gold
       const costBTC = point.btcPriceUSD ? point.itemPriceUSD / point.btcPriceUSD : null;
+      const costSPY = point.spyPriceUSD ? point.itemPriceUSD / point.spyPriceUSD : null;
 
       return {
         year: point.year,
         rawUSD: costUSD,
         rawGold: costGold,
         rawBTC: costBTC,
+        rawSPY: costSPY,
       };
     });
   }, [item]);
@@ -84,6 +86,15 @@ export function CostChart({ item }: CostChartProps) {
             domain={['auto', 'auto']}
           />
 
+          {/* Secondary Right Axis: SPY (Hidden axis line/ticks to reduce clutter, but used for scaling) */}
+          <YAxis 
+            yAxisId="right-spy"
+            orientation="right"
+            stroke="hsl(217, 91%, 60%)"
+            hide={true} // Hidden visual axis, but used for scaling the blue line
+            domain={['auto', 'auto']}
+          />
+
           <Tooltip 
             content={({ active, payload, label }) => {
               if (active && payload && payload.length) {
@@ -101,6 +112,9 @@ export function CostChart({ item }: CostChartProps) {
                       } else if (entry.dataKey === "rawBTC") {
                         formattedValue = `${Number(entry.value).toFixed(6)}`;
                         unit = " BTC";
+                      } else if (entry.dataKey === "rawSPY") {
+                        formattedValue = `${Number(entry.value).toFixed(4)}`;
+                        unit = " shares";
                       }
 
                       return (
@@ -157,6 +171,17 @@ export function CostChart({ item }: CostChartProps) {
             strokeWidth={3}
             dot={{ r: 4, fill: "hsl(24, 95%, 53%)", strokeWidth: 0 }}
             activeDot={{ r: 6 }}
+          />
+          <Line
+            yAxisId="right-spy"
+            type="monotone"
+            dataKey="rawSPY"
+            name="S&P 500 (SPY) Cost"
+            stroke="hsl(217, 91%, 60%)"
+            strokeWidth={3}
+            dot={{ r: 4, fill: "hsl(217, 91%, 60%)", strokeWidth: 0 }}
+            activeDot={{ r: 6 }}
+            connectNulls
           />
         </LineChart>
       </ResponsiveContainer>

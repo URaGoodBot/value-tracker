@@ -3,6 +3,13 @@ export interface PriceDataPoint {
   itemPriceUSD: number;
   goldPriceUSD: number;
   btcPriceUSD: number | null;
+  // S&P 500 ETF (SPY) price in USD for the year.
+  // - 1999 onward: actual SPY year-end close (split-adjusted), from Robinhood MCP.
+  // - 1970-1998: derived from S&P 500 index year-end close ÷ 10 (SPY trades at
+  //   ~1/10 of the index). SPY launched 1993-01-22; pre-launch values are the
+  //   underlying index as a proxy.
+  // - null: not used (BASE_FINANCIALS keys only).
+  spyPriceUSD: number | null;
 }
 
 export interface ItemData {
@@ -14,34 +21,38 @@ export interface ItemData {
   data: PriceDataPoint[];
 }
 
-// Base financial data (Gold/BTC history) to ensure consistency across items
-const BASE_FINANCIALS: Record<number, { gold: number, btc: number | null }> = {
-  1970: { gold: 36, btc: null },
-  1975: { gold: 161, btc: null },
-  1980: { gold: 615, btc: null },
-  1985: { gold: 317, btc: null },
-  1990: { gold: 383, btc: null },
-  1995: { gold: 384, btc: null },
-  2000: { gold: 279, btc: null },
-  2005: { gold: 444, btc: null },
-  2008: { gold: 871, btc: null },
-  2009: { gold: 972, btc: 0.0009 },
-  2010: { gold: 1224, btc: 0.30 },
-  2011: { gold: 1571, btc: 4.70 }, 
-  2012: { gold: 1668, btc: 13 },
-  2013: { gold: 1411, btc: 750 },
-  2014: { gold: 1266, btc: 320 },
-  2015: { gold: 1160, btc: 430 },
-  2016: { gold: 1250, btc: 960 },
-  2017: { gold: 1257, btc: 13800 },
-  2018: { gold: 1268, btc: 3700 },
-  2019: { gold: 1392, btc: 7200 },
-  2020: { gold: 1770, btc: 29000 },
-  2021: { gold: 1799, btc: 46000 },
-  2022: { gold: 1800, btc: 16500 },
-  2023: { gold: 2000, btc: 42000 },
-  2024: { gold: 2620, btc: 93429 },
-  2025: { gold: 2400, btc: 95000 },
+// Base financial data (Gold/BTC/SPY history) to ensure consistency across items.
+// SPY values: 1970-1998 are S&P 500 index year-end ÷ 10 (SPY didn't exist);
+// 1999 onward are real SPY year-end closes (split-adjusted), from Robinhood MCP.
+// Only these years appear on the chart's x-axis — adding more would densify
+// the sparse line and require item-level USD prices we don't have.
+const BASE_FINANCIALS: Record<number, { gold: number, btc: number | null, spy: number | null }> = {
+  1970: { gold: 36, btc: null, spy: 9.22 },
+  1975: { gold: 161, btc: null, spy: 9.02 },
+  1980: { gold: 615, btc: null, spy: 13.58 },
+  1985: { gold: 317, btc: null, spy: 21.13 },
+  1990: { gold: 383, btc: null, spy: 33.02 },
+  1995: { gold: 384, btc: null, spy: 61.59 },
+  2000: { gold: 279, btc: null, spy: 131.19 },
+  2005: { gold: 444, btc: null, spy: 124.51 },
+  2008: { gold: 871, btc: null, spy: 90.24 },
+  2009: { gold: 972, btc: 0.0009, spy: 111.44 },
+  2010: { gold: 1224, btc: 0.30, spy: 125.75 },
+  2011: { gold: 1571, btc: 4.70, spy: 125.50 },
+  2012: { gold: 1668, btc: 13, spy: 142.41 },
+  2013: { gold: 1411, btc: 750, spy: 184.69 },
+  2014: { gold: 1266, btc: 320, spy: 205.54 },
+  2015: { gold: 1160, btc: 430, spy: 203.87 },
+  2016: { gold: 1250, btc: 960, spy: 223.53 },
+  2017: { gold: 1257, btc: 13800, spy: 266.86 },
+  2018: { gold: 1268, btc: 3700, spy: 249.92 },
+  2019: { gold: 1392, btc: 7200, spy: 321.86 },
+  2020: { gold: 1770, btc: 29000, spy: 373.88 },
+  2021: { gold: 1799, btc: 46000, spy: 474.96 },
+  2022: { gold: 1800, btc: 16500, spy: 382.43 },
+  2023: { gold: 2000, btc: 42000, spy: 475.31 },
+  2024: { gold: 2620, btc: 93429, spy: 586.08 },
+  2025: { gold: 2400, btc: 95000, spy: 681.92 },
 };
 
 // Helper to construct data points
@@ -62,7 +73,8 @@ function createItemData(usdPrices: Record<number, number>): PriceDataPoint[] {
       year,
       itemPriceUSD: price,
       goldPriceUSD: financials.gold,
-      btcPriceUSD: financials.btc
+      btcPriceUSD: financials.btc,
+      spyPriceUSD: financials.spy
     };
   });
 }

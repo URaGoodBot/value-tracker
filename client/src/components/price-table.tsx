@@ -14,21 +14,23 @@ export function PriceTable({ item }: PriceTableProps) {
     const point = item.data.find(d => d.year === year);
     if (!point) return null;
 
-    // Calculate Gold Price (oz) and BTC Price
+    // Calculate Gold Price (oz), BTC Price, and SPY Shares
     // Avoid division by zero
     const goldCost = point.goldPriceUSD ? point.itemPriceUSD / point.goldPriceUSD : 0;
     const btcCost = point.btcPriceUSD ? point.itemPriceUSD / point.btcPriceUSD : null;
+    const spyCost = point.spyPriceUSD ? point.itemPriceUSD / point.spyPriceUSD : null;
 
     return {
       year,
       usd: point.itemPriceUSD,
       gold: goldCost,
       btc: btcCost,
+      spy: spyCost,
     };
-  }).filter(Boolean) as { year: number; usd: number; gold: number; btc: number | null }[];
+  }).filter(Boolean) as { year: number; usd: number; gold: number; btc: number | null; spy: number | null }[];
 
   // Helper to format numbers
-  const formatValue = (val: number | null, type: 'usd' | 'gold' | 'btc') => {
+  const formatValue = (val: number | null, type: 'usd' | 'gold' | 'btc' | 'spy') => {
     if (val === null) return "";
     
     if (type === 'usd') {
@@ -44,6 +46,12 @@ export function PriceTable({ item }: PriceTableProps) {
       if (val > 1) return val.toFixed(2);
       if (val > 0.001) return val.toFixed(4);
       return val.toFixed(6);
+    }
+    if (type === 'spy') {
+      // SPY shares — varies from <1 share (homes) to 100s (bread in 1970s)
+      if (val > 100) return val.toFixed(0);
+      if (val > 10) return val.toFixed(2);
+      return val.toFixed(4);
     }
     return val.toString();
   };
@@ -74,6 +82,7 @@ export function PriceTable({ item }: PriceTableProps) {
   const usdValues = tableData.map(d => d.usd);
   const goldValues = tableData.map(d => d.gold);
   const btcValues = tableData.map(d => d.btc);
+  const spyValues = tableData.map(d => d.spy);
 
   return (
     <Card className="border-border bg-card/40 backdrop-blur-md shadow-2xl mb-12 overflow-hidden">
@@ -116,6 +125,16 @@ export function PriceTable({ item }: PriceTableProps) {
               {tableData.map((d, i) => (
                 <td key={d.year} className={cn("p-2 border-l border-border/20 transition-colors", getColorClass(d.btc, btcValues))}>
                   {formatValue(d.btc, 'btc')}
+                </td>
+              ))}
+            </tr>
+
+            {/* SPY ROW */}
+            <tr className="border-b border-border/50 group hover:bg-muted/5">
+              <td className="p-3 font-bold text-left bg-white dark:bg-slate-950 sticky left-0 z-20 border-r border-border shadow-[4px_0_12px_-4px_rgba(0,0,0,0.1)] text-chart-4">S&amp;P 500 (SPY)</td>
+              {tableData.map((d, i) => (
+                <td key={d.year} className={cn("p-2 border-l border-border/20 transition-colors", getColorClass(d.spy, spyValues))}>
+                  {formatValue(d.spy, 'spy')}
                 </td>
               ))}
             </tr>
